@@ -9,19 +9,20 @@
             <div class="flex items-center gap-2 text-white/60 text-xs mb-2">
                 <a href="{{ route('admin.cursos.index') }}" class="hover:text-white transition">Cursos</a>
                 <span>/</span>
-                <span class="text-white">Nuevo curso</span>
+                <span class="text-white">Editar curso</span>
             </div>
-            <h1 class="text-white text-3xl font-black">Crear nuevo curso</h1>
+            <h1 class="text-white text-3xl font-black">Editar curso: {{ $course->title }}</h1>
             <p class="text-white/60 text-sm mt-1">Asocia el curso a una casa de la cultura y define todos sus detalles.</p>
         </div>
     </div>
 
     <div class="max-w-3xl mx-auto px-4 sm:px-8 mt-8">
 
-        <form method="POST" action="{{ route('admin.cursos.store') }}"
+        <form method="POST" action="{{ route('admin.cursos.update', $course) }}"
               enctype="multipart/form-data"
               class="bg-white rounded-2xl shadow-sm overflow-hidden">
             @csrf
+            @method('PUT')
 
             {{-- ── Sección 1: Sede y Categoría ── --}}
             <div class="px-6 py-5 border-b border-gray-100">
@@ -40,7 +41,7 @@
                                        focus:outline-none focus:ring-2 focus:ring-mzl-blue focus:border-transparent transition">
                             <option value="">— Selecciona una sede —</option>
                             @foreach($sedes as $sede)
-                            <option value="{{ $sede->id }}" {{ (old('sede_id', $selectedSede) == $sede->id) ? 'selected' : '' }}>
+                            <option value="{{ $sede->id }}" {{ (old('sede_id', $course->sede_id) == $sede->id) ? 'selected' : '' }}>
                                 {{ $sede->name }} ({{ ucfirst($sede->zone) }})
                             </option>
                             @endforeach
@@ -60,7 +61,7 @@
                                        focus:outline-none focus:ring-2 focus:ring-mzl-blue focus:border-transparent transition">
                             <option value="">— Selecciona —</option>
                             @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>
+                            <option value="{{ $cat->id }}" {{ old('category_id', $course->category_id) == $cat->id ? 'selected' : '' }}>
                                 {{ $cat->icon }} {{ $cat->name }}
                             </option>
                             @endforeach
@@ -80,7 +81,7 @@
                             class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm
                                    focus:outline-none focus:ring-2 focus:ring-mzl-blue focus:border-transparent transition h-32">
                         @foreach($users as $u)
-                        <option value="{{ $u->id }}" {{ (is_array(old('managers')) && in_array($u->id, old('managers'))) ? 'selected' : '' }}>
+                        <option value="{{ $u->id }}" {{ (in_array($u->id, old('managers', $course->managers->pluck('id')->toArray()))) ? 'selected' : '' }}>
                             {{ $u->name }} - CC/Doc {{ $u->document_number ?? 'N/A' }} ({{ $u->email }})
                         </option>
                         @endforeach
@@ -104,7 +105,7 @@
                     <label for="title" class="block text-sm font-semibold text-gray-700 mb-1">
                         Nombre del curso <span class="text-mzl-pink">*</span>
                     </label>
-                    <input id="title" type="text" name="title" value="{{ old('title') }}" required
+                    <input id="title" type="text" name="title" value="{{ old('title', $course->title) }}" required
                            placeholder="Ej: Iniciación a la Pintura Acuarela"
                            class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm
                                   focus:outline-none focus:ring-2 focus:ring-mzl-blue focus:border-transparent transition">
@@ -119,7 +120,7 @@
                     <textarea id="description" name="description" rows="4" required
                               placeholder="Describe los objetivos, contenido y a quién va dirigido el curso..."
                               class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm resize-none
-                                     focus:outline-none focus:ring-2 focus:ring-mzl-blue focus:border-transparent transition">{{ old('description') }}</textarea>
+                                     focus:outline-none focus:ring-2 focus:ring-mzl-blue focus:border-transparent transition">{{ old('description', $course->description) }}</textarea>
                     @error('description')<p class="text-mzl-pink text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
@@ -135,19 +136,19 @@
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
                     <div>
                         <label for="start_date" class="block text-sm font-semibold text-gray-700 mb-1">Fecha inicio <span class="text-mzl-pink">*</span></label>
-                        <input id="start_date" type="date" name="start_date" value="{{ old('start_date') }}" required
+                        <input id="start_date" type="date" name="start_date" value="{{ old('start_date', $course->start_date) }}" required
                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-mzl-blue transition">
                         @error('start_date')<p class="text-mzl-pink text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label for="end_date" class="block text-sm font-semibold text-gray-700 mb-1">Fecha fin <span class="text-mzl-pink">*</span></label>
-                        <input id="end_date" type="date" name="end_date" value="{{ old('end_date') }}" required
+                        <input id="end_date" type="date" name="end_date" value="{{ old('end_date', $course->end_date) }}" required
                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-mzl-blue transition">
                         @error('end_date')<p class="text-mzl-pink text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label for="capacity" class="block text-sm font-semibold text-gray-700 mb-1">Cupo máx. <span class="text-mzl-pink">*</span></label>
-                        <input id="capacity" type="number" name="capacity" value="{{ old('capacity', 20) }}" required min="1" max="500"
+                        <input id="capacity" type="number" name="capacity" value="{{ old('capacity', $course->capacity) }}" required min="1" max="500"
                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-mzl-blue transition">
                         @error('capacity')<p class="text-mzl-pink text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
@@ -155,8 +156,11 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Días de Clase <span class="text-mzl-pink">*</span></label>
                         <div class="flex flex-wrap gap-3">
                             @foreach([1 => 'Lu', 2 => 'Ma', 3 => 'Mi', 4 => 'Ju', 5 => 'Vi', 6 => 'Sa', 7 => 'Do'] as $val => $label)
-                            <label class="flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer hover:bg-gray-50 transition {{ is_array(old('days')) && in_array($val, old('days')) ? 'bg-mzl-blue/10 border-mzl-blue text-mzl-blue' : 'border-gray-200' }}">
-                                <input type="checkbox" name="days[]" value="{{ $val }}" {{ is_array(old('days')) && in_array($val, old('days')) ? 'checked' : '' }} class="text-mzl-blue rounded focus:ring-mzl-blue">
+                            @php
+                                $isChecked = is_array(old('days', $course->days ?? [])) && in_array($val, old('days', $course->days ?? []));
+                            @endphp
+                            <label class="flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer hover:bg-gray-50 transition {{ $isChecked ? 'bg-mzl-blue/10 border-mzl-blue text-mzl-blue' : 'border-gray-200' }}">
+                                <input type="checkbox" name="days[]" value="{{ $val }}" {{ $isChecked ? 'checked' : '' }} class="text-mzl-blue rounded focus:ring-mzl-blue">
                                 <span class="text-sm font-bold">{{ $label }}</span>
                             </label>
                             @endforeach
@@ -168,13 +172,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                     <div>
                         <label for="start_time" class="block text-sm font-semibold text-gray-700 mb-1">Hora Inicio <span class="text-mzl-pink">*</span></label>
-                        <input id="start_time" type="time" name="start_time" step="60" value="{{ old('start_time', '14:00') }}" required
+                        <input id="start_time" type="time" name="start_time" value="{{ old('start_time', $course->start_time ? \Carbon\Carbon::parse($course->start_time)->format('H:i') : '') }}" required
                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-mzl-blue transition">
                         @error('start_time')<p class="text-mzl-pink text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label for="end_time" class="block text-sm font-semibold text-gray-700 mb-1">Hora Fin <span class="text-mzl-pink">*</span></label>
-                        <input id="end_time" type="time" name="end_time" step="60" value="{{ old('end_time', '16:00') }}" required
+                        <input id="end_time" type="time" name="end_time" value="{{ old('end_time', $course->end_time ? \Carbon\Carbon::parse($course->end_time)->format('H:i') : '') }}" required
                                class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-mzl-blue transition">
                         @error('end_time')<p class="text-mzl-pink text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
@@ -190,8 +194,8 @@
                 </h2>
                 <div class="flex items-center gap-5" id="img-wrapper">
                     <div class="w-28 h-28 rounded-2xl overflow-hidden bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center shrink-0">
-                        <img id="img-preview" src="" alt="" class="w-full h-full object-cover hidden">
-                        <svg id="img-placeholder" class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <img id="img-preview" src="{{ $course->image ? asset('storage/'.$course->image) : '' }}" class="w-full h-full object-cover {{ $course->image ? '' : 'hidden' }}">
+                        <svg id="img-placeholder" class="w-10 h-10 text-gray-300 {{ $course->image ? 'hidden' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                     </div>
@@ -217,8 +221,8 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     @foreach(['open' => ['Abierto','mzl-teal'], 'in_progress' => ['En progreso','mzl-orange'], 'finished' => ['Finalizado','gray-500'], 'cancelled' => ['Cancelado','mzl-pink']] as $val => [$label, $color])
                     <label class="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 cursor-pointer transition
-                        {{ old('status', 'open') === $val ? 'border-mzl-blue bg-mzl-blue/5' : 'border-gray-200 hover:border-gray-300' }}">
-                        <input type="radio" name="status" value="{{ $val }}" {{ old('status', 'open') === $val ? 'checked' : '' }}
+                        {{ old('status', $course->status) === $val ? 'border-mzl-blue bg-mzl-blue/5' : 'border-gray-200 hover:border-gray-300' }}">
+                        <input type="radio" name="status" value="{{ $val }}" {{ old('status', $course->status) === $val ? 'checked' : '' }}
                                class="text-mzl-blue focus:ring-mzl-blue">
                         <span class="text-sm font-semibold text-gray-700">{{ $label }}</span>
                     </label>
@@ -239,7 +243,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Crear curso
+                    Guardar cambios
                 </button>
             </div>
         </form>

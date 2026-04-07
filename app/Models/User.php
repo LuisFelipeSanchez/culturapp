@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class User extends Authenticatable
 {
@@ -26,6 +27,8 @@ class User extends Authenticatable
         'birth_date',
         'role',
         'sede_id',
+        'is_flagged',
+        'flagged_reason',
     ];
 
     protected $hidden = [
@@ -52,6 +55,11 @@ class User extends Authenticatable
     public function enrollments(): HasMany
     {
         return $this->hasMany(Enrollment::class);
+    }
+
+    public function managedCourses(): BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'course_user');
     }
 
     // ──── Helpers de rol ────────────────────────────────────────────────────

@@ -16,11 +16,35 @@ Route::get('/', function () {
 // Esto crea automáticamente sedes.index y sedes.show
 Route::resource('sedes', SedeController::class)->only(['index', 'show']);
 
-// RUTAS PROTEGIDAS PARA ADMINISTRADORES
+Route::get('/cursos/{course}', [\App\Http\Controllers\CourseController::class, 'show'])->name('cursos.show');
+
+// RUTAS PROTEGIDAS PARA ADMINISTRADORES Y USUARIOS
 Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Enrollment para cursos
+    Route::post('/cursos/{course}/enroll', [\App\Http\Controllers\EnrollmentController::class, 'store'])->name('enrollments.store');
+    Route::delete('/cursos/{course}/unenroll', [\App\Http\Controllers\EnrollmentController::class, 'destroy'])->name('enrollments.destroy');
+
+    // Mis Cursos & Gestión de Profesores
+    Route::get('/mis-cursos', [\App\Http\Controllers\MyCoursesController::class, 'index'])->name('my-courses.index');
+    Route::get('/mis-cursos/gestion/{course}', [\App\Http\Controllers\MyCoursesController::class, 'manage'])->name('my-courses.manage');
+    Route::patch('/mis-cursos/enrollments/{enrollment}/inhabilitar', [\App\Http\Controllers\MyCoursesController::class, 'disableStudent'])->name('my-courses.disable');
+    Route::patch('/mis-cursos/enrollments/{enrollment}/aprobar', [\App\Http\Controllers\MyCoursesController::class, 'approveStudent'])->name('my-courses.approve');
+    Route::patch('/mis-cursos/enrollments/{enrollment}/rechazar', [\App\Http\Controllers\MyCoursesController::class, 'rejectStudent'])->name('my-courses.reject');
+    Route::patch('/mis-cursos/enrollments/{enrollment}/reintegrar', [\App\Http\Controllers\MyCoursesController::class, 'restoreStudent'])->name('my-courses.restore');
+
+    // LMS Activities and SpeedGrader
+    Route::post('/mis-cursos/{course}/actividades', [\App\Http\Controllers\CourseActivityController::class, 'store'])->name('activities.store');
+    Route::delete('/mis-cursos/{course}/actividades/{activity}', [\App\Http\Controllers\CourseActivityController::class, 'destroy'])->name('activities.destroy');
+
+    Route::get('/mis-cursos/{course}/actividades/{activity}/speedgrader', [\App\Http\Controllers\SpeedGraderController::class, 'show'])->name('speedgrader.show');
+    Route::post('/mis-cursos/{course}/actividades/{activity}/speedgrader/grabar', [\App\Http\Controllers\SpeedGraderController::class, 'saveGrade'])->name('speedgrader.save');
 
     // Dashboard con datos reales
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Gestión de usuarios - Solo SuperAdmin
+    Route::get('/admin/usuarios', [\App\Http\Controllers\Admin\UserManagementController::class, 'index'])->name('admin.users.index');
 
     // La ruta que creamos para el Super Admin y Admins
     Route::get('/admin/manage/{sede?}', [AdminSedeController::class, 'manage'])->name('admin.manage');

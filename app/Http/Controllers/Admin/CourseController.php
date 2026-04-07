@@ -55,8 +55,9 @@ class CourseController extends Controller
         }
 
         $categories = Category::orderBy('name')->get();
+        $users      = \App\Models\User::orderBy('name')->get();
 
-        return view('admin.cursos.create', compact('sedes', 'categories', 'selectedSede'));
+        return view('admin.cursos.create', compact('sedes', 'categories', 'users', 'selectedSede'));
     }
 
     /**
@@ -72,12 +73,16 @@ class CourseController extends Controller
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'capacity'    => ['required', 'integer', 'min:1', 'max:500'],
-            'hours'       => ['required', 'integer', 'min:1', 'max:9999'],
-            'schedule'    => ['required', 'string', 'max:255'],
+            'days'        => ['required', 'array', 'min:1'],
+            'days.*'      => ['integer', 'between:1,7'],
+            'start_time'  => ['required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/'],
+            'end_time'    => ['required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/'],
             'start_date'  => ['required', 'date'],
             'end_date'    => ['required', 'date', 'after_or_equal:start_date'],
             'status'      => ['required', 'in:open,in_progress,finished,cancelled'],
             'image'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'managers'    => ['nullable', 'array'],
+            'managers.*'  => ['exists:users,id'],
         ]);
 
         // Autorización: un admin solo puede crear en su sede
@@ -90,6 +95,10 @@ class CourseController extends Controller
         }
 
         $course = Course::create($data);
+
+        if ($request->has('managers')) {
+            $course->managers()->sync($request->input('managers'));
+        }
 
         return redirect()
             ->route('admin.cursos.show', $course)
@@ -106,7 +115,7 @@ class CourseController extends Controller
             abort(403, 'No tienes permiso para ver este curso.');
         }
 
-        $course->load(['sede', 'category', 'enrollments.student']);
+        $course->load(['sede', 'category', 'enrollments.student', 'managers']);
         return view('admin.cursos.show', compact('course'));
     }
 
@@ -122,8 +131,9 @@ class CourseController extends Controller
 
         $sedes      = Sede::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
+        $users      = \App\Models\User::orderBy('name')->get();
 
-        return view('admin.cursos.edit', compact('course', 'sedes', 'categories'));
+        return view('admin.cursos.edit', compact('course', 'sedes', 'categories', 'users'));
     }
 
     /**
@@ -139,12 +149,16 @@ class CourseController extends Controller
             'title'       => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'capacity'    => ['required', 'integer', 'min:1', 'max:500'],
-            'hours'       => ['required', 'integer', 'min:1', 'max:9999'],
-            'schedule'    => ['required', 'string', 'max:255'],
+            'days'        => ['required', 'array', 'min:1'],
+            'days.*'      => ['integer', 'between:1,7'],
+            'start_time'  => ['required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/'],
+            'end_time'    => ['required', 'regex:/^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/'],
             'start_date'  => ['required', 'date'],
             'end_date'    => ['required', 'date', 'after_or_equal:start_date'],
             'status'      => ['required', 'in:open,in_progress,finished,cancelled'],
             'image'       => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
+            'managers'    => ['nullable', 'array'],
+            'managers.*'  => ['exists:users,id'],
         ]);
 
         // Autorización
@@ -160,6 +174,12 @@ class CourseController extends Controller
         }
 
         $course->update($data);
+
+        if ($request->has('managers')) {
+            $course->managers()->sync($request->input('managers'));
+        } else {
+            $course->managers()->detach();
+        }
 
         return redirect()
             ->route('admin.cursos.show', $course)

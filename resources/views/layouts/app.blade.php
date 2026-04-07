@@ -65,6 +65,7 @@
                      x-transition:leave-end="opacity-0 -translate-y-2">
                      <div class="px-4 py-3 space-y-1.5 shadow-inner">
                          <a href="{{ route('dashboard') }}" class="block px-4 py-2.5 rounded-xl font-bold {{ request()->routeIs('dashboard') ? 'bg-mzl-blue/10 text-mzl-blue' : 'text-gray-600 hover:bg-gray-100' }}">Dashboard</a>
+                         <a href="{{ route('my-courses.index') }}" class="block px-4 py-2.5 rounded-xl font-bold {{ request()->routeIs('my-courses.*') ? 'bg-mzl-yellow/10 text-mzl-yellow' : 'text-gray-600 hover:bg-gray-100' }}">Mis Cursos</a>
                          
                          @if(Auth::user()->isSuperAdmin() || Auth::user()->isAdmin())
                             <a href="{{ route('admin.manage') }}" class="block px-4 py-2.5 rounded-xl font-bold {{ request()->routeIs('admin.manage') ? 'bg-mzl-blue/10 text-mzl-blue' : 'text-gray-600 hover:bg-gray-100' }}">Gestionar Sedes</a>

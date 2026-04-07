@@ -91,6 +91,13 @@
                     'icon'   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>',
                 ],
                 [
+                    'route'  => 'my-courses.index',
+                    'label'  => 'Mis Cursos',
+                    'match'  => 'my-courses.*',
+                    'color'  => 'mzl-yellow',
+                    'icon'   => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>',
+                ],
+                [
                     'route'  => 'sedes.index',
                     'label'  => 'Sedes públicas',
                     'match'  => 'sedes.index',
@@ -175,11 +182,6 @@
             </p>
             <div x-show="collapsed" class="border-t border-white/10 my-3 mx-2"></div>
 
-            @php
-                $soon = [
-                    ['label' => 'Inscripciones', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>'],
-                ];
-            @endphp
 
             {{-- Cursos: ahora activo --}}
             @php $courseActive = request()->routeIs('admin.cursos.*'); @endphp
@@ -238,34 +240,35 @@
             </a>
 
 
-            @foreach($soon as $s)
-            <a href="#"
-            :title="collapsed ? '{{ $s['label'] }} (próximamente)' : ''"
-            class="group flex items-center gap-3 px-[10px] py-[10px] rounded-xl text-white/40 cursor-default opacity-70">
-                <span class="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-white/5">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        {!! $s['icon'] !!}
-                    </svg>
-                </span>
-                <span x-show="!collapsed"
-                    x-transition:enter="transition-opacity duration-150 delay-100"
-                    x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100"
-                    x-transition:leave="transition-opacity duration-75"
-                    x-transition:leave-start="opacity-100"
-                    x-transition:leave-end="opacity-0"
-                    class="font-semibold text-sm whitespace-nowrap flex-1">
-                    {{ $s['label'] }}
-                </span>
-                <span x-show="!collapsed"
-                    x-transition:enter="transition-opacity duration-150 delay-150"
-                    x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100"
-                    class="text-[10px] font-bold bg-mzl-yellow/15 text-mzl-yellow px-2 py-0.5 rounded-full shrink-0 whitespace-nowrap">
-                    Pronto
-                </span>
-            </a>
-            @endforeach
+            {{-- Gestión de Usuarios: Solo SuperAdmin --}}
+            @if(Auth::user()->isSuperAdmin())
+                @php $usersActive = request()->routeIs('admin.users.*'); @endphp
+                <a href="{{ route('admin.users.index') }}"
+                :title="collapsed ? 'Gestión de Usuarios' : ''"
+                class="group relative flex items-center gap-3 px-[10px] py-[10px] rounded-xl transition-all duration-200
+                    {{ $usersActive ? 'bg-white/12 text-white' : 'text-white/65 hover:bg-white/8 hover:text-white' }}">
+                    @if($usersActive)
+                    <span class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-mzl-yellow"></span>
+                    @endif
+                    <span class="shrink-0 w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-200
+                        {{ $usersActive ? 'bg-mzl-pink/25' : 'bg-white/5 group-hover:bg-white/10' }}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </span>
+                    <span x-show="!collapsed"
+                        x-transition:enter="transition-opacity duration-150 delay-100"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition-opacity duration-75"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="font-semibold text-sm whitespace-nowrap">Gestión de Usuarios</span>
+                    @if($usersActive)
+                    <span x-show="!collapsed" class="ml-auto w-2 h-2 rounded-full bg-mzl-yellow animate-pulse shrink-0"></span>
+                    @endif
+                </a>
+            @endif
         @endif
 
     </nav>

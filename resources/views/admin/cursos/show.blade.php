@@ -36,8 +36,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     Editar
                 </a>
-                <form method="POST" action="{{ route('admin.cursos.destroy', $course) }}"
-                      onsubmit="return confirm('¿Eliminar este curso? Esta acción es irreversible.')">
+                <form id="delete-course-form" method="POST" action="{{ route('admin.cursos.destroy', $course) }}">
                     @csrf @method('DELETE')
                     <button type="submit"
                             class="inline-flex items-center gap-2 bg-white/10 text-white border border-white/20 font-bold px-4 py-2 rounded-xl text-sm hover:bg-mzl-pink/30 transition">
@@ -86,9 +85,9 @@
 
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p class="text-gray-400 text-xs font-semibold uppercase tracking-wide mb-1">Horario</p>
-                            <p class="text-gray-800 font-semibold">{{ $course->schedule }}</p>
-                        </div>
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Horario de Clases</p>
+                        <p class="text-sm font-semibold text-gray-900 border border-gray-200 rounded-lg px-3 py-2 bg-white">{{ $course->formatted_schedule }}</p>
+                    </div>
                         <div>
                             <p class="text-gray-400 text-xs font-semibold uppercase tracking-wide mb-1">Cupo máximo</p>
                             <p class="text-gray-800 font-semibold">{{ $course->capacity }} estudiantes</p>
@@ -162,6 +161,25 @@
                     </div>
                 </div>
 
+                <div class="bg-white rounded-2xl shadow-sm p-5 space-y-4">
+                    <h2 class="font-bold text-gray-900 text-sm">Encargados / Profesores</h2>
+                    @if(isset($course->managers) && $course->managers->count() > 0)
+                        <ul class="space-y-3 mt-3">
+                            @foreach($course->managers as $manager)
+                            <li class="flex items-center gap-3">
+                                <img src="{{ $manager->avatarUrl() }}" alt="" class="w-8 h-8 rounded-full">
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-800">{{ $manager->name }}</p>
+                                    <p class="text-xs text-gray-400">{{ $manager->email }}</p>
+                                </div>
+                            </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-xs text-gray-400">No hay encargados asignados.</p>
+                    @endif
+                </div>
+
                 <div class="flex h-2 rounded-full overflow-hidden shadow-sm">
                     <div class="flex-1 bg-mzl-blue"></div>
                     <div class="flex-1 bg-mzl-teal"></div>
@@ -174,3 +192,33 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const deleteForm = document.getElementById('delete-course-form');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: '¿Confirmar eliminación?',
+                text: "Esta acción es irreversible y eliminará todos los registros asociados.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444', 
+                cancelButtonColor: '#9ca3af',
+                confirmButtonText: 'Sí, eliminar curso',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'rounded-xl font-bold shadow-md',
+                    cancelButton: 'rounded-xl font-bold border-0 hover:bg-gray-100'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    this.submit();
+                }
+            });
+        });
+    }
+</script>
+@endpush

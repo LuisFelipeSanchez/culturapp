@@ -221,7 +221,7 @@
                         default       => ['bg-gray-100', 'text-gray-500', 'border-gray-200', $course->status],
                     };
                 @endphp
-                <div class="bg-white rounded-3xl shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 overflow-hidden group cursor-default flex flex-col">
+                <a href="{{ route('cursos.show', $course) }}" class="bg-white rounded-3xl shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col block">
                     <div class="relative w-full h-40 overflow-hidden">
                         @if($course->image)
                         <img src="{{ asset('storage/' . $course->image) }}" alt="{{ $course->title }}"
@@ -253,7 +253,7 @@
                             </div>
                             <div class="flex items-center gap-2 text-sm text-gray-600">
                                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span>{{ $course->schedule }} </span>
+                                <span>{{ $course->formatted_schedule }} </span>
                             </div>
                             <div class="flex items-center gap-2 text-sm text-gray-600">
                                 <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
@@ -261,7 +261,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
                 @endforeach
             </div>
             @endif

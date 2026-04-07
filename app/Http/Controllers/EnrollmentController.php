@@ -26,9 +26,33 @@ class EnrollmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, \App\Models\Course $course)
     {
-        //
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        if ($course->enrollments()->where('user_id', $user->id)->exists()) {
+            return back()->with('error', 'Ya estás inscrito en este curso.');
+        }
+
+        if ($course->availableSpots <= 0) {
+            return back()->with('error', 'El curso ya no tiene cupos disponibles.');
+        }
+
+        $status = $user->is_flagged ? 'pending' : 'enrolled';
+        
+        $course->enrollments()->create([
+            'user_id' => $user->id,
+            'status' => $status
+        ]);
+
+        $message = $user->is_flagged 
+            ? 'Tu inscripción está en espera de aprobación (' . $course->title . ').' 
+            : 'Te has inscrito exitosamente al curso "' . $course->title . '".';
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -58,8 +82,20 @@ class EnrollmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Enrollment $enrollment)
+    public function destroy(Request $request, \App\Models\Course $course)
     {
-        //
+        $user = auth()->user();
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        /** @var \App\Models\Enrollment|null $enrollment */
+        $enrollment = $course->enrollments()->where('user_id', $user->id)->first();
+        if ($enrollment) {
+            $enrollment->delete();
+            return back()->with('success', 'Has anulado tu inscripción al curso correctamente.');
+        }
+
+        return back()->with('error', 'No estabas inscrito en este curso.');
     }
 }
