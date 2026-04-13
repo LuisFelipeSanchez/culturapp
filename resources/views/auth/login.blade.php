@@ -1,4 +1,10 @@
 <x-guest-layout>
+    {{-- Encabezado --}}
+    <div class="mb-8">
+        <h2 class="text-3xl font-extrabold text-gray-900">Bienvenido de nuevo</h2>
+        <p class="text-gray-500 mt-1 text-sm">Ingresa tus credenciales para continuar.</p>
+    </div>
+
     {{-- Session Status --}}
     <x-auth-session-status class="mb-6" :status="session('status')" />
 
@@ -63,11 +69,24 @@
         </button>
 
         {{-- Divider decorativo --}}
-        <div class="flex items-center gap-3 my-2">
+        <div class="flex items-center gap-3 my-3">
             <div class="flex-1 h-px bg-gray-200"></div>
-            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wide">Cultura que nos une</span>
+            <span class="text-xs text-gray-400 font-semibold uppercase tracking-wide">¿Eres nuevo?</span>
             <div class="flex-1 h-px bg-gray-200"></div>
         </div>
+
+        {{-- Botón Regístrate --}}
+        <a href="{{ route('register') }}"
+           class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 font-bold text-base transition-all"
+           style="border-color:#3650BB; color:#3650BB;"
+           onmouseover="this.style.background='#3650BB11'"
+           onmouseout="this.style.background='transparent'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Regístrate con tu documento
+        </a>
 
         {{-- Línea de color de marca abajo --}}
         <div class="flex gap-2 justify-center mt-2">

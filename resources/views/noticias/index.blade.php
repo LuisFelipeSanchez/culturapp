@@ -35,9 +35,14 @@
 </nav>
 
 {{-- HERO GLOBAL NEWS --}}
-<div class="bg-white border-b border-gray-200">
-    <div class="max-w-6xl mx-auto px-4 sm:px-8 py-10 lg:py-16 text-center">
-        <div class="inline-flex items-center gap-2 text-mzl-blue text-sm font-bold uppercase tracking-wider mb-4 bg-mzl-blue/10 px-4 py-1.5 rounded-full">
+<div class="bg-white border-b border-gray-200 overflow-hidden relative">
+    {{-- Fondo decorativo --}}
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="absolute -top-[20%] -right-[10%] w-[50%] h-[150%] bg-gradient-to-l from-mzl-blue/[0.03] to-transparent transform rotate-12"></div>
+        <div class="absolute -bottom-[20%] -left-[10%] w-[50%] h-[100%] bg-gradient-to-r from-mzl-teal/[0.03] to-transparent transform -rotate-12"></div>
+    </div>
+    <div class="max-w-6xl mx-auto px-4 sm:px-8 py-10 lg:py-16 text-center relative z-10 animate-fade-in-up">
+        <div class="inline-flex items-center gap-2 text-mzl-blue text-sm font-bold uppercase tracking-wider mb-4 bg-mzl-blue/10 px-4 py-1.5 rounded-full ring-4 ring-mzl-blue/5">
             <span>Secretaría de Cultura de Manizales</span>
         </div>
         <h1 class="font-black text-4xl lg:text-5xl text-gray-900 leading-tight mb-4">Actualidad Cultural</h1>
@@ -62,11 +67,11 @@
     @else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($news as $item)
-            <article class="bg-white rounded-3xl shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col overflow-hidden group">
+            <article class="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden group hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(54,80,187,0.15)] transition-all duration-300 opacity-0 animate-fade-in-up" style="animation-delay: {{ $loop->index * 100 }}ms;">
                 
                 @if($item->image_url)
-                <div class="relative w-full h-48 overflow-hidden">
-                    <img src="{{ Str::startsWith($item->image_url, 'http') ? $item->image_url : asset($item->image_url) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                <div class="relative w-full h-48 overflow-hidden bg-gray-100">
+                    <img src="{{ Str::startsWith($item->image_url, 'http') ? $item->image_url : asset($item->image_url) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out">
                 </div>
                 @endif
                 
@@ -86,9 +91,9 @@
                 {{-- Acción de la noticia si existe --}}
                 @if($item->action_url && $item->action_text)
                 <div class="p-6 pt-0 mt-auto">
-                    <a href="{{ $item->action_url }}" class="inline-flex items-center justify-center gap-2 w-full px-6 py-2.5 bg-gray-50 hover:bg-mzl-blue text-mzl-blue hover:text-white rounded-xl font-bold text-sm transition-colors border border-gray-100 hover:border-mzl-blue group/btn">
+                    <a href="{{ $item->action_url }}" class="inline-flex items-center justify-center gap-2 w-full px-6 py-2.5 bg-gray-50 hover:bg-gradient-to-r hover:from-mzl-blue hover:to-mzl-teal text-mzl-blue hover:text-white rounded-xl font-bold text-sm transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-mzl-blue/20 group/btn border border-gray-100 hover:border-transparent">
                         {{ $item->action_text }}
-                        <svg class="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </a>
                 </div>
                 @endisset

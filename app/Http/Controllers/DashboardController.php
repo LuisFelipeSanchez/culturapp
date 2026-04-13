@@ -83,14 +83,11 @@ class DashboardController extends Controller
             $totalUsers       = 0;
             $fullCourses      = 0;
             $pendingGrades    = 0;
-            $sedes            = collect();
             
-            // Si está vinculado a una sede, opcionalmente mostrar esa sede
-            if ($user->sede_id) {
-                $sedes = Sede::where('id', $user->sede_id)
-                    ->withCount(['courses', 'news'])
-                    ->get();
-            }
+            // Para el carousel, todos los ciudadanos ven todas las sedes
+            $sedes = Sede::withCount(['courses', 'news'])
+                         ->orderBy('name')
+                         ->get();
 
             $recentEnrollments = $user->enrollments()
                 ->with(['course.sede'])

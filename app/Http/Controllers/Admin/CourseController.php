@@ -9,6 +9,7 @@ use App\Models\Sede;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class CourseController extends Controller
 {
@@ -115,7 +116,7 @@ class CourseController extends Controller
             abort(403, 'No tienes permiso para ver este curso.');
         }
 
-        $course->load(['sede', 'category', 'enrollments.student', 'managers']);
+        $course->load(['sede', 'category', 'enrollments.student', 'enrollments.grades', 'managers', 'activities']);
         return view('admin.cursos.show', compact('course'));
     }
 
@@ -210,5 +211,58 @@ class CourseController extends Controller
         return redirect()
             ->route('admin.cursos.index')
             ->with('success', "Curso \"{$title}\" eliminado.");
+    }
+
+    /**
+     * Exporta el certificado de un estudiante específico si aplica.
+     */
+    public function exportCertificate(Course $course, \App\Models\User $user)
+    {
+        $admin = auth()->user();
+        if (!$admin->canManageSede($course->sede_id)) {
+            abort(403, 'No tienes permiso para gestionar este curso.');
+        }
+
+        // Aumentamos el límite de memoria para DOMPDF
+        ini_set('memory_limit', '512M');
+        set_time_limit(120);
+
+        $totalActivities = $course->activities()->count();
+
+        if ($totalActivities === 0) {
+            return back()->with('error', 'El curso no tiene actividades configuradas, por lo que no se pueden certificar estudiantes.');
+        }
+
+        $enrollment = $course->enrollments()
+            ->with(['student', 'grades'])
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        $gradesCount = $enrollment->grades->count();
+
+        if ($gradesCount === 0 || $gradesCount < $totalActivities) {
+            return back()->with('error', "El estudiante {$user->name} no ha completado todas las notas ({$gradesCount} de {$totalActivities}).");
+        }
+
+        $average = $enrollment->grades->avg('score');
+
+        if ($average < 3.5) {
+            return back()->with('error', "El promedio del estudiante {$user->name} es de " . number_format($average, 1) . ". Requiere al menos 3.5 para certificar.");
+        }
+
+        $enrollment->calculated_average = $average;
+
+        $logoPath = public_path('images/sec-cultura-logo.jpg');
+        $logoData = file_exists($logoPath) ? 'data:image/jpeg;base64,' . base64_encode(file_get_contents($logoPath)) : '';
+
+        // Necesario pasar una colección o array si la vista iteraba sobre foreach
+        $pdf = Pdf::setOptions(['isHtml5ParserEnabled' => true, 'isRemoteEnabled' => true])
+            ->loadView('pdf.certificate', [
+                'course' => $course,
+                'enrollments' => collect([$enrollment]),
+                'logoData' => $logoData
+            ])->setPaper('a4', 'landscape');
+
+        return $pdf->download("certificado_{$user->name}_{$course->title}.pdf");
     }
 }

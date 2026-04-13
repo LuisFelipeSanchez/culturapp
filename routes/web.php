@@ -56,6 +56,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->names('admin.cursos')
         ->parameters(['cursos' => 'course']);
 
+    // Exportación de certificados por usuario
+    Route::get('/admin/cursos/{course}/certificado/{user}', [\App\Http\Controllers\Admin\CourseController::class, 'exportCertificate'])->name('admin.cursos.certificado');
+
     // Noticias - CRUD para super admin 
     Route::resource('admin/noticias', \App\Http\Controllers\Admin\NewsController::class)
         ->names('admin.noticias')

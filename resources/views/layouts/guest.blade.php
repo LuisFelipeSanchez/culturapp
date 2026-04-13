@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'CulturApp') }} — Ingresar</title>
+        <title>{{ config('app.name', 'CulturApp') }}{{ isset($pageTitle) ? ' — ' . $pageTitle : '' }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -104,12 +104,6 @@
             {{-- ===== PANEL DERECHO: Formulario ===== --}}
             <div class="lg:w-2/5 flex items-center justify-center p-8 lg:p-16 bg-white">
                 <div class="w-full max-w-md">
-                    {{-- Encabezado del formulario --}}
-                    <div class="mb-8">
-                        <h2 class="text-3xl font-extrabold text-gray-900">Bienvenido de nuevo</h2>
-                        <p class="text-gray-500 mt-1 text-sm">Ingresa tus credenciales para continuar.</p>
-                    </div>
-
                     {{ $slot }}
                 </div>
             </div>

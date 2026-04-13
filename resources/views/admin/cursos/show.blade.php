@@ -126,7 +126,7 @@
                     </div>
                     <ul class="divide-y divide-gray-50 mt-3">
                         @forelse($course->enrollments as $enrollment)
-                        <li class="px-6 py-3 flex items-center gap-3">
+                        <li class="px-6 py-3 flex items-center gap-3 hover:bg-gray-50 transition rounded-xl">
                             <img src="{{ $enrollment->student->avatarUrl() }}"
                                  alt="{{ $enrollment->student->name }}"
                                  class="w-8 h-8 rounded-full object-cover shrink-0">
@@ -134,11 +134,31 @@
                                 <p class="text-sm font-semibold text-gray-800 truncate">{{ $enrollment->student->name }}</p>
                                 <p class="text-xs text-gray-400">{{ $enrollment->student->email }}</p>
                             </div>
-                            @if($enrollment->final_grade)
-                            <span class="text-xs font-bold text-mzl-teal">Nota: {{ $enrollment->final_grade }}</span>
-                            @else
-                            <span class="text-xs text-gray-400">Sin nota</span>
-                            @endif
+                            
+                            <div class="flex items-center gap-3 shrink-0">
+                                @php
+                                    $gradesCount  = $enrollment->grades->count();
+                                    $calcAverage  = $gradesCount > 0 ? $enrollment->grades->avg('score') : null;
+                                    $totalActs    = $course->activities->count();
+                                @endphp
+
+                                @if($calcAverage !== null)
+                                    <div class="text-right">
+                                        <span class="text-xs font-bold {{ $calcAverage >= 3.5 ? 'text-mzl-teal' : 'text-mzl-pink' }}">
+                                            Promedio: {{ number_format($calcAverage, 1) }}
+                                        </span>
+                                        <p class="text-[10px] text-gray-400 leading-none mt-0.5">{{ $gradesCount }}/{{ $totalActs }} evaluadas</p>
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400 italic">Sin evaluar</span>
+                                @endif
+                                
+                                <a href="{{ route('admin.cursos.certificado', ['course' => $course->id, 'user' => $enrollment->student->id]) }}" 
+                                   title="Generar Certificado Individual" 
+                                   class="p-1.5 border-2 border-gray-100 text-mzl-teal rounded-lg hover:bg-mzl-teal hover:text-white hover:border-mzl-teal transition-all">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                                </a>
+                            </div>
                         </li>
                         @empty
                         <li class="px-6 py-8 text-center text-gray-400 text-sm">Aún no hay inscritos.</li>

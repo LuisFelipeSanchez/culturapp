@@ -21,6 +21,20 @@ export default {
                 'mzl-orange': '#FF6702',
                 'mzl-pink': '#E92050',
                 'mzl-yellow': '#FFC400',
+            },
+            keyframes: {
+                'fade-in-up': {
+                    '0%': { opacity: '0', transform: 'translateY(20px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                'fade-in': {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
+                }
+            },
+            animation: {
+                'fade-in-up': 'fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                'fade-in': 'fade-in 0.6s ease-out forwards',
             }
         },
     },

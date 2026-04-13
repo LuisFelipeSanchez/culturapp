@@ -28,7 +28,7 @@
 
 <div class="bg-white border-b border-gray-200">
     <div class="max-w-5xl mx-auto px-4 sm:px-8 py-10 lg:py-16">
-        <div class="flex flex-col lg:flex-row gap-10 lg:items-start">
+        <div class="flex flex-col lg:flex-row gap-10 lg:items-start" x-data="{ tab: 'informacion' }">
             
             <div class="w-full lg:w-5/12 shrink-0">
                 <div class="aspect-[4/3] rounded-3xl overflow-hidden shadow-lg border border-gray-100 relative">
@@ -43,6 +43,15 @@
             </div>
 
             <div class="flex-1 space-y-6">
+                @php
+                    $isEnrolledUser = false;
+                    $enrollment = null;
+                    if(auth()->check()) {
+                        $enrollment = $course->enrollments()->where('user_id', auth()->id())->first();
+                        $isEnrolledUser = $enrollment && in_array($enrollment->status, ['enrolled', 'approved']);
+                    }
+                @endphp
+
                 <div>
                     <div class="flex items-center gap-2 text-mzl-blue text-sm font-bold uppercase tracking-wider mb-2">
                         <span>{{ $course->category->name }}</span>
@@ -65,93 +74,150 @@
                 </div>
                 @endif
 
-                <p class="text-gray-600 text-lg leading-relaxed">{{ $course->description }}</p>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                    <div class="col-span-2">
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Horarios</p>
-                        <p class="text-sm font-bold text-gray-800">{{ $course->formatted_schedule }}</p>
+                @if($isEnrolledUser)
+                    <div class="bg-gray-100 p-1.5 rounded-2xl flex gap-1 mb-6">
+                        <button @click="tab = 'informacion'" :class="tab === 'informacion' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition">Información General</button>
+                        <button @click="tab = 'calificaciones'" :class="tab === 'calificaciones' ? 'bg-white text-mzl-teal shadow-sm' : 'text-gray-500 hover:text-gray-700'" class="flex-1 py-2.5 rounded-xl font-bold text-sm transition">Mis Calificaciones</button>
                     </div>
-                    <div>
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Duración</p>
-                        <p class="text-sm font-bold text-gray-800">{{ $course->hours }} horas</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Fechas</p>
-                        <p class="text-sm font-bold text-gray-800">{{ \Carbon\Carbon::parse($course->start_date)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($course->end_date)->format('d/m/Y') }}</p>
-                    </div>
-                    <div>
-                        <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Cupos Disp.</p>
-                        <p class="text-sm font-black {{ $course->availableSpots > 0 ? 'text-mzl-blue' : 'text-mzl-pink' }}">{{ $course->availableSpots }} / {{ $course->capacity }}</p>
-                    </div>
-                </div>
-
-                @if(isset($course->managers) && $course->managers->count() > 0)
-                <div>
-                    <h3 class="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Profesores / Encargados</h3>
-                    <div class="flex flex-wrap gap-4">
-                        @foreach($course->managers as $manager)
-                        <div class="flex items-center gap-3">
-                            <img src="{{ $manager->avatarUrl() }}" alt="" class="w-10 h-10 rounded-full border border-gray-200">
-                            <div>
-                                <p class="text-sm font-bold text-gray-800">{{ $manager->name }}</p>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
                 @endif
-                
-                <div class="pt-4">
-                    @auth
-                        @php
-                            $enrollment = $course->enrollments()->where('user_id', auth()->id())->first();
-                        @endphp
-                        
-                        @if($enrollment)
-                            @if(in_array($enrollment->status, ['enrolled', 'pending']))
-                                <form id="unenroll-form" method="POST" action="{{ route('enrollments.destroy', $course) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-white border-2 border-mzl-pink text-mzl-pink rounded-2xl font-black shadow-sm text-lg hover:bg-mzl-pink hover:text-white transition-all flex items-center justify-center gap-2">
-                                        Anular mi inscripción
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+
+                {{-- INFO TAB --}}
+                <div x-show="tab === 'informacion'" x-transition.opacity.duration.300ms class="space-y-6">
+                    <p class="text-gray-600 text-lg leading-relaxed">{{ $course->description }}</p>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div class="col-span-2">
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Horarios</p>
+                            <p class="text-sm font-bold text-gray-800">{{ $course->formatted_schedule }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Duración</p>
+                            <p class="text-sm font-bold text-gray-800">{{ $course->hours }} horas</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Fechas</p>
+                            <p class="text-sm font-bold text-gray-800">{{ \Carbon\Carbon::parse($course->start_date)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($course->end_date)->format('d/m/Y') }}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400 font-bold uppercase tracking-wider mb-1">Cupos Disp.</p>
+                            <p class="text-sm font-black {{ $course->availableSpots > 0 ? 'text-mzl-blue' : 'text-mzl-pink' }}">{{ $course->availableSpots }} / {{ $course->capacity }}</p>
+                        </div>
+                    </div>
+
+                    @if(isset($course->managers) && $course->managers->count() > 0)
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">Profesores / Encargados</h3>
+                        <div class="flex flex-wrap gap-4">
+                            @foreach($course->managers as $manager)
+                            <div class="flex items-center gap-3">
+                                <img src="{{ $manager->avatarUrl() }}" alt="" class="w-10 h-10 rounded-full border border-gray-200">
+                                <div>
+                                    <p class="text-sm font-bold text-gray-800">{{ $manager->name }}</p>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+                    
+                    <div class="pt-4">
+                        @auth
+                            @if($enrollment)
+                                @if(in_array($enrollment->status, ['enrolled', 'pending']))
+                                    <form id="unenroll-form" method="POST" action="{{ route('enrollments.destroy', $course) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-white border-2 border-mzl-pink text-mzl-pink rounded-2xl font-black shadow-sm text-lg hover:bg-mzl-pink hover:text-white transition-all flex items-center justify-center gap-2">
+                                            Anular mi inscripción
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </form>
+                                @elseif($enrollment->status === 'approved')
+                                    <form id="unenroll-form" method="POST" action="{{ route('enrollments.destroy', $course) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-white border-2 border-mzl-pink text-mzl-pink rounded-2xl font-black shadow-sm text-lg hover:bg-mzl-pink hover:text-white transition-all flex items-center justify-center gap-2">
+                                            Anular mi inscripción
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                        </button>
+                                    </form>
+                                @elseif(in_array($enrollment->status, ['failed', 'dropped']))
+                                    <button disabled class="w-full sm:w-auto px-8 py-4 bg-mzl-pink/10 text-mzl-pink rounded-2xl font-black shadow-sm text-lg flex items-center justify-center gap-2 cursor-not-allowed border border-mzl-pink/20">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                        Inscripción anulada/inhabilitada
                                     </button>
-                                </form>
-                            @elseif($enrollment->status === 'approved')
-                                <form id="unenroll-form" method="POST" action="{{ route('enrollments.destroy', $course) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-white border-2 border-mzl-pink text-mzl-pink rounded-2xl font-black shadow-sm text-lg hover:bg-mzl-pink hover:text-white transition-all flex items-center justify-center gap-2">
-                                        Anular mi inscripción
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                                    </button>
-                                </form>
-                            @elseif(in_array($enrollment->status, ['failed', 'dropped']))
-                                <button disabled class="w-full sm:w-auto px-8 py-4 bg-mzl-pink/10 text-mzl-pink rounded-2xl font-black shadow-sm text-lg flex items-center justify-center gap-2 cursor-not-allowed border border-mzl-pink/20">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                    Inscripción anulada/inhabilitada
+                                @endif
+                            @elseif($course->availableSpots <= 0)
+                                <button disabled class="w-full sm:w-auto px-8 py-4 bg-mzl-black/10 text-gray-500 rounded-2xl font-black shadow-sm text-lg flex items-center justify-center gap-2 cursor-not-allowed border border-gray-200">
+                                    Cupos agotados
                                 </button>
+                            @else
+                                <form method="POST" action="{{ route('enrollments.store', $course) }}">
+                                    @csrf
+                                    <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-mzl-blue text-white rounded-2xl font-black shadow-lg shadow-mzl-blue/30 text-lg hover:-translate-y-1 hover:shadow-xl hover:shadow-mzl-blue/40 transition-all flex items-center justify-center gap-2">
+                                        ¡Inscribirme ahora!
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                    </button>
+                                </form>
                             @endif
-                        @elseif($course->availableSpots <= 0)
-                            <button disabled class="w-full sm:w-auto px-8 py-4 bg-mzl-black/10 text-gray-500 rounded-2xl font-black shadow-sm text-lg flex items-center justify-center gap-2 cursor-not-allowed border border-gray-200">
-                                Cupos agotados
-                            </button>
                         @else
-                            <form method="POST" action="{{ route('enrollments.store', $course) }}">
-                                @csrf
-                                <button type="submit" class="w-full sm:w-auto px-8 py-4 bg-mzl-blue text-white rounded-2xl font-black shadow-lg shadow-mzl-blue/30 text-lg hover:-translate-y-1 hover:shadow-xl hover:shadow-mzl-blue/40 transition-all flex items-center justify-center gap-2">
-                                    ¡Inscribirme ahora!
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                                </button>
-                            </form>
-                        @endif
-                    @else
-                        <a href="{{ route('login') }}" class="inline-flex w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-2xl font-black shadow-lg text-lg hover:-translate-y-1 transition-all items-center justify-center gap-2">
-                            Inicia sesión para inscribirte
-                        </a>
-                    @endauth
+                            <a href="{{ route('login') }}" class="inline-flex w-full sm:w-auto px-8 py-4 bg-gray-900 text-white rounded-2xl font-black shadow-lg text-lg hover:-translate-y-1 transition-all items-center justify-center gap-2">
+                                Inicia sesión para inscribirte
+                            </a>
+                        @endauth
+                    </div>
                 </div>
+
+                {{-- CALIFICACIONES TAB --}}
+                @if($isEnrolledUser)
+                    <div x-show="tab === 'calificaciones'" x-transition.opacity.duration.300ms style="display: none;">
+                        <h3 class="text-xl font-black text-gray-900 mb-4 inline-flex items-center gap-2">
+                            <svg class="w-6 h-6 text-mzl-teal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+                            Mis Calificaciones
+                        </h3>
+                        
+                        @if($course->activities->isEmpty())
+                            <p class="text-gray-500 text-sm bg-gray-50 p-4 rounded-2xl border border-gray-100 mt-2">Aún no hay actividades evaluativas registradas para este curso.</p>
+                        @else
+                            <div class="space-y-4 mt-2">
+                                @foreach($course->activities as $activity)
+                                    @php
+                                        $grade = $enrollment->grades()->where('activity_id', $activity->id)->first();
+                                    @endphp
+                                    <div class="bg-white border {{ $grade ? 'border-mzl-teal/30 bg-mzl-teal/5' : 'border-gray-200' }} rounded-2xl p-5 shadow-sm">
+                                        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                            <div class="flex-1">
+                                                <h4 class="font-bold text-gray-900">{{ $activity->title }}</h4>
+                                                <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ $activity->description }}</p>
+                                                @if($grade && $grade->feedback)
+                                                    <div class="mt-3 bg-white p-3 rounded-xl border border-mzl-teal/20 text-sm">
+                                                        <span class="text-xs font-bold uppercase tracking-wider text-mzl-teal block mb-1">Retroalimentación:</span>
+                                                        <span class="text-gray-700 italic">"{{ $grade->feedback }}"</span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="shrink-0 sm:text-right">
+                                                @if($grade)
+                                                    <div class="inline-flex items-end gap-1">
+                                                        <span class="text-3xl font-black text-mzl-teal leading-none">{{ floatval($grade->score) }}</span>
+                                                        <span class="text-sm font-bold text-gray-400 mb-1">/ {{ floatval($activity->max_grade) }}</span>
+                                                    </div>
+                                                    <span class="block text-[10px] font-bold uppercase tracking-widest text-mzl-teal mt-1">Calificado</span>
+                                                @else
+                                                    <div class="inline-flex items-end gap-1">
+                                                        <span class="text-2xl font-black text-gray-300 leading-none">-</span>
+                                                        <span class="text-sm font-bold text-gray-400 mb-1">/ {{ floatval($activity->max_grade) }}</span>
+                                                    </div>
+                                                    <span class="block text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Pendiente</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
             </div>
         </div>

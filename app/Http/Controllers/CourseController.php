@@ -36,7 +36,7 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        $course->load(['sede', 'category', 'managers']);
+        $course->load(['sede', 'category', 'managers', 'activities']);
         return view('cursos.show', compact('course'));
     }
 

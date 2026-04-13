@@ -122,11 +122,11 @@
             ];
         @endphp
 
-        @if(Auth::user()->isSuperAdmin() || Auth::user()->isAdmin())
+        @if($sedes && $sedes->count() > 0)
         <div>
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sedes</h2>
-                <a href="{{ route('admin.manage') }}" class="text-mzl-blue text-sm font-semibold hover:underline">Ver todas →</a>
+                <a href="{{ route('sedes.index') }}" class="text-mzl-blue text-sm font-semibold hover:underline">Ver todas →</a>
             </div>
 
             {{-- Alpine carousel --}}
@@ -205,7 +205,7 @@
                                             </div>
                                             <div class="w-px bg-white/20"></div>
                                             <div class="text-center">
-                                                <p class="text-white font-black text-lg leading-none">{{ $sede->total_enrollments }}</p>
+                                                <p class="text-white font-black text-lg leading-none">{{ $sede->total_enrollments ?? 0 }}</p>
                                                 <p class="text-white/60 text-[10px] uppercase tracking-wide">Inscritos</p>
                                             </div>
                                             <div class="w-px bg-white/20"></div>
