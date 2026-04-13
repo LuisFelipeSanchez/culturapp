@@ -111,15 +111,18 @@
 
         {{-- ===== CAROUSEL DE SEDES ===== --}}
         @php
-            // Imagenes de placeholder culturales via Unsplash
+            // Imágenes culturales dinámicas y de alta estética (resolución optimizada)
             $sedeImages = [
-                'https://images.unsplash.com/photo-1569388033990-f84c1e2de7df?w=800&q=80', // teatro/cultura
-                'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=800&q=80', // artes
-                'https://images.unsplash.com/photo-1541753866388-0b3c701627d3?w=800&q=80', // danza
-                'https://images.unsplash.com/photo-1522158637959-30385a09e0da?w=800&q=80', // musica
-                'https://images.unsplash.com/photo-1635003913011-95671e37c273?w=800&q=80', // pintura
-                'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=800&q=80', // espectaculo
+                'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80', // Luces y Cultura
+                'https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?auto=format&fit=crop&w=800&q=80', // Arte visual
+                'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80', // Micrófono/Acústica
+                'https://images.unsplash.com/photo-1544531586-fde5298cdd40?auto=format&fit=crop&w=800&q=80', // Pintura Vibrante
+                'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?auto=format&fit=crop&w=800&q=80', // Espectáculo en Vivo
+                'https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?auto=format&fit=crop&w=800&q=80', // Arquitectura Abstracta
+                'https://images.unsplash.com/photo-1481277542470-605612bd2d61?auto=format&fit=crop&w=800&q=80', // Arquitectura Cultural
+                'https://images.unsplash.com/photo-1522158637959-30385a09e0da?auto=format&fit=crop&w=800&q=80', // Violín Lírico
             ];
+            // Aseguramos que varíen usando el ID de la sede o un hash si queremos que sean consistentes
         @endphp
 
         @if($sedes && $sedes->count() > 0)
@@ -171,7 +174,8 @@
                     >
                         @foreach($sedes as $index => $sede)
                         @php
-                            $img = $sedeImages[$index % count($sedeImages)];
+                            // Asignar una imagen semi-fija basada en el ID de la sede para que siempre tenga la misma foto
+                            $img = $sedeImages[$sede->id % count($sedeImages)];
                         @endphp
                         <div class="shrink-0 w-[85%] sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] snap-center">
                             <div class="relative rounded-3xl overflow-hidden shadow-lg group h-80 cursor-pointer">
