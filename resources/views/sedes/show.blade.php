@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $sede->name }} — CulturApp Manizales</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @viteReactRefresh
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/app-react.tsx', 'resources/js/app-cursos.tsx'])
     <style>
         body { font-family: 'Nunito', sans-serif; }
         [x-cloak] { display: none !important; }
@@ -157,119 +158,41 @@
             </div>
         </div>
 
-        {{-- TAB: INICIO (Noticias) --}}
-        <div x-show="tab === 'inicio'" x-transition.opacity.duration.400ms x-cloak>
-            <h2 class="font-black text-2xl text-gray-900 mb-6">Noticias y Actualidad</h2>
-            
-            @if($sede->news->isEmpty())
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
-                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14"/></svg>
-                <p class="font-bold text-lg text-gray-500 mb-1">Cero noticias por ahora</p>
-                <p class="text-sm">Vuelve pronto para enterarte de lo que pasa en esta sede.</p>
-            </div>
-            @else
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                @foreach($sede->news as $item)
-                <article class="bg-white rounded-3xl shadow-sm hover:shadow-md border border-gray-100 transition duration-300 flex flex-col overflow-hidden group/news">
-                    <div class="p-6 md:p-8 flex-1 flex flex-col">
-                        <div class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                            <span class="w-1.5 h-1.5 rounded-full bg-mzl-orange"></span>
-                            {{ $item->created_at->translatedFormat('d F Y') }}
-                        </div>
-                        <h3 class="font-black text-xl text-gray-900 group-hover/news:text-mzl-blue transition leading-snug mb-3">
-                            {{ $item->title }}
-                        </h3>
-                        <p class="text-gray-500 text-sm leading-relaxed flex-1">
-                            {{ $item->body ?? $item->content }}
-                        </p>
-                    </div>
+    {{-- TAB: INICIO (Noticias) — React animated columns --}}
+    <div x-show="tab === 'inicio'" x-transition.opacity.duration.400ms x-cloak>
+        <div
+            id="news-columns-root"
+            data-news="{{ $sede->news->map(fn($n) => [
+                'title' => $n->title,
+                'content' => $n->content,
+                'image_url' => $n->image_url,
+                'created_at' => $n->created_at->toIso8601String(),
+                'action_text' => $n->action_text,
+                'action_url' => $n->action_url,
+            ])->toJson() }}"
+        ></div>
+    </div>
 
-                    {{-- Acción de la noticia si existe --}}
-                    @if($item->action_url && $item->action_text)
-                    <div class="p-6 pt-0 mt-auto">
-                        <a href="{{ $item->action_url }}" class="inline-flex items-center justify-center gap-2 w-full lg:w-auto px-6 py-2.5 bg-gray-50 hover:bg-mzl-blue text-mzl-blue hover:text-white rounded-xl font-bold text-sm transition-colors border border-gray-100 hover:border-mzl-blue group/btn">
-                            {{ $item->action_text }}
-                            <svg class="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                        </a>
-                    </div>
-                    @endisset
-                </article>
-                @endforeach
-            </div>
-            @endif
-        </div>
-
-        {{-- TAB: CURSOS --}}
-        <div x-show="tab === 'cursos'" x-transition.opacity.duration.400ms x-cloak>
-            <h2 class="font-black text-2xl text-gray-900 mb-6">Oferta de Cursos</h2>
-            
-            @if($sede->courses->isEmpty())
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
-                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                <p class="font-bold text-lg text-gray-500 mb-1">Sin cursos todavía</p>
-                <p class="text-sm">Actualmente no hay inscripciones abiertas para esta sede.</p>
-            </div>
-            @else
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($sede->courses as $course)
-                @php
-                    $statusColors = match($course->status) {
-                        'open'        => ['bg-mzl-teal/10', 'text-mzl-teal', 'border-mzl-teal/20', 'Abierto'],
-                        'in_progress' => ['bg-mzl-orange/10', 'text-mzl-orange', 'border-mzl-orange/20', 'En progreso'],
-                        'finished'    => ['bg-gray-100', 'text-gray-500', 'border-gray-200', 'Finalizado'],
-                        'cancelled'   => ['bg-mzl-pink/10', 'text-mzl-pink', 'border-mzl-pink/20', 'Cancelado'],
-                        default       => ['bg-gray-100', 'text-gray-500', 'border-gray-200', $course->status],
-                    };
-                @endphp
-                <a href="{{ route('cursos.show', $course) }}" class="bg-white rounded-3xl shadow-sm hover:shadow-lg border border-gray-100 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col block">
-                    <div class="relative w-full h-40 overflow-hidden">
-                        @if($course->image)
-                        <img src="{{ asset('storage/' . $course->image) }}" alt="{{ $course->title }}"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        @else
-                        <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center text-5xl">
-                            {{ $course->category->icon ?? '🎨' }}
-                        </div>
-                        @endif
-                        <div class="absolute top-3 right-3 flex gap-2">
-                            <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider backdrop-blur bg-white/90 shadow-sm border {{ $statusColors[2] }} {{ $statusColors[1] }}">
-                                {{ $statusColors[3] }}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="p-6 flex-1 flex flex-col">
-                        <div class="flex items-center gap-1.5 mb-2">
-                            <span class="text-sm font-mzl-blue leading-none">{{ $course->category->icon ?? '' }}</span>
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ $course->category->name }}</span>
-                        </div>
-                        <h3 class="font-black text-lg text-gray-900 leading-snug mb-4 group-hover:text-mzl-blue transition-colors">
-                            {{ $course->title }}
-                        </h3>
-                        
-                        <div class="mt-auto space-y-2.5">
-                            <div class="flex items-center gap-2 text-sm text-gray-600">
-                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                <span>{{ \Carbon\Carbon::parse($course->start_date)->translatedFormat('d M') }} — {{ \Carbon\Carbon::parse($course->end_date)->translatedFormat('d M Y') }}</span>
-                            </div>
-                            <div class="flex items-center gap-2 text-sm text-gray-600">
-                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                <span>{{ $course->formatted_schedule }} </span>
-                            </div>
-                            <div class="flex items-center gap-2 text-sm text-gray-600">
-                                <svg class="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
-                                <span>{{ $course->hours }} horas totales • {{ $course->capacity }} cupos</span>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-                @endforeach
-            </div>
-            @endif
-        </div>
+    {{-- TAB: CURSOS — React expanding cards --}}
+    <div x-show="tab === 'cursos'" x-transition.opacity.duration.400ms x-cloak>
+        <div
+            id="courses-expanding-root"
+            data-base-url="{{ url('/cursos') }}"
+            data-courses="{{ $sede->courses->map(fn($c) => [
+                'id' => $c->id,
+                'title' => $c->title,
+                'description' => $c->formatted_schedule . ' • ' . $c->hours . 'h • ' . $c->capacity . ' cupos',
+                'image' => $c->image ? asset('storage/' . $c->image) : null,
+                'category_name' => $c->category->name,
+                'category_icon' => $c->category->icon,
+                'status' => $c->status,
+            ])->toJson() }}"
+        ></div>
+    </div>
 
     </div>
 
-</div>
+    </div>
 
 </body>
 </html>
