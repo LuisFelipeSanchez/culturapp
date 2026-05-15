@@ -99,4 +99,19 @@ class Course extends Model
         $enrolledCount = $this->enrollments()->whereIn('status', ['enrolled', 'pending', 'approved'])->count();
         return max(0, $this->capacity - $enrolledCount);
     }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        // If it's already a full URL (external), return as-is
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+
+        // Otherwise, it's a relative path on the public disk
+        return asset('storage/' . $this->image);
+    }
 }

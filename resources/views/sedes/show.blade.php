@@ -178,15 +178,18 @@
         <div
             id="courses-expanding-root"
             data-base-url="{{ url('/cursos') }}"
-            data-courses="{{ $sede->courses->map(fn($c) => [
-                'id' => $c->id,
-                'title' => $c->title,
-                'description' => $c->formatted_schedule . ' • ' . $c->hours . 'h • ' . $c->capacity . ' cupos',
-                'image' => $c->image ? asset('storage/' . $c->image) : null,
-                'category_name' => $c->category->name,
-                'category_icon' => $c->category->icon,
-                'status' => $c->status,
-            ])->toJson() }}"
+                data-courses="{{ $sede->courses->map(fn($c) => [
+                    'id' => $c->id,
+                    'title' => $c->title,
+                    'description' => $c->description,
+                    'schedule' => $c->formatted_schedule,
+                    'hours' => $c->hours,
+                    'capacity' => $c->capacity,
+                    'image' => $c->image_url,
+                    'category_name' => $c->category->name,
+                    'category_icon' => $c->category->icon,
+                    'status' => $c->status,
+                ])->toJson() }}"
         ></div>
     </div>
 

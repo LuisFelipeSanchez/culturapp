@@ -72,7 +72,7 @@
                     {{-- Imagen flotante a la derecha --}}
                     @if($course->image)
                     <div class="float-right ml-5 mb-3">
-                        <img src="{{ asset('storage/' . $course->image) }}"
+                        <img src="{{ $course->image_url }}"
                              alt="{{ $course->title }}"
                              class="w-40 h-40 object-cover rounded-2xl shadow-md border border-gray-100">
                     </div>

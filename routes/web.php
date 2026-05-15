@@ -18,6 +18,9 @@ Route::resource('sedes', SedeController::class)->only(['index', 'show']);
 
 Route::get('/cursos/{course}', [\App\Http\Controllers\CourseController::class, 'show'])->name('cursos.show');
 
+// RUTAS PÚBLICAS DE NOTICIAS
+Route::get('/noticias', [\App\Http\Controllers\NewsController::class, 'indexPublic'])->name('noticias.index');
+
 // RUTAS PROTEGIDAS PARA ADMINISTRADORES Y USUARIOS
 Route::middleware(['auth', 'verified'])->group(function () {
     
@@ -59,13 +62,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Exportación de certificados por usuario
     Route::get('/admin/cursos/{course}/certificado/{user}', [\App\Http\Controllers\Admin\CourseController::class, 'exportCertificate'])->name('admin.cursos.certificado');
 
-    // Noticias - CRUD para super admin 
+    // Noticias - CRUD para super admin
     Route::resource('admin/noticias', \App\Http\Controllers\Admin\NewsController::class)
         ->names('admin.noticias')
         ->parameters(['noticias' => 'news']);
-
-    // Rutas públicas de Noticias
-    Route::get('/noticias', [\App\Http\Controllers\NewsController::class, 'indexPublic'])->name('noticias.index');
 
     // Rutas del perfil de Breeze (si las dejaste)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

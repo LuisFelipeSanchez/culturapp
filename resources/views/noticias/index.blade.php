@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Noticias y Actualidad — CulturApp Manizales</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @viteReactRefresh
+    @vite(['resources/css/app.css', 'resources/js/app-noticias.tsx'])
     <style>
         body { font-family: 'Nunito', sans-serif; }
     </style>
@@ -27,9 +28,9 @@
             <span class="w-2.5 h-2.5 rounded-full bg-mzl-yellow"></span>
         </div>
         @auth
-        <a href="{{ route('dashboard') }}" class="text-sm font-bold text-mzl-blue hover:text-mzl-teal transition">Panel</a>
+            <a href="{{ route('dashboard') }}" class="text-sm font-bold text-mzl-blue hover:text-mzl-teal transition">Panel</a>
         @else
-        <a href="{{ route('login') }}" class="text-sm font-bold bg-mzl-blue text-white px-4 py-2 rounded-xl hover:bg-opacity-90 transition">Ingresar</a>
+            <a href="{{ route('login') }}" class="text-sm font-bold bg-mzl-blue text-white px-4 py-2 rounded-xl hover:bg-opacity-90 transition">Ingresar</a>
         @endauth
     </div>
 </nav>
@@ -56,57 +57,12 @@
     <div class="flex-1 bg-mzl-blue"></div><div class="flex-1 bg-mzl-teal"></div><div class="flex-1 bg-mzl-orange"></div><div class="flex-1 bg-mzl-pink"></div><div class="flex-1 bg-mzl-yellow"></div>
 </div>
 
-{{-- GLOBAL NEWS GRID --}}
+{{-- REACT STAGGER NEWS MOUNT POINT --}}
 <div class="max-w-6xl mx-auto px-4 sm:px-8 py-10 lg:py-16">
-    @if($news->isEmpty())
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
-            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H14"/></svg>
-            <p class="font-bold text-lg text-gray-500 mb-1">Cero anuncios por ahora</p>
-            <p class="text-sm">Vuelve pronto para enterarte de lo que pasa a nivel ciudad.</p>
-        </div>
-    @else
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach($news as $item)
-            <article class="bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden group hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(54,80,187,0.15)] transition-all duration-300 opacity-0 animate-fade-in-up" style="animation-delay: {{ $loop->index * 100 }}ms;">
-                
-                @if($item->image_url)
-                <div class="relative w-full h-48 overflow-hidden bg-gray-100">
-                    <img src="{{ Str::startsWith($item->image_url, 'http') ? $item->image_url : asset($item->image_url) }}" alt="{{ $item->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out">
-                </div>
-                @endif
-                
-                <div class="p-6 md:p-8 flex-1 flex flex-col">
-                    <div class="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">
-                        <span class="w-2 h-2 rounded-full bg-mzl-yellow"></span>
-                        {{ $item->created_at->translatedFormat('d F Y') }}
-                    </div>
-                    <h3 class="font-black text-xl text-gray-900 group-hover:text-mzl-blue transition leading-snug mb-3">
-                        {{ $item->title }}
-                    </h3>
-                    <p class="text-gray-600 text-sm leading-relaxed flex-1">
-                        {{ $item->body ?? $item->content }}
-                    </p>
-                </div>
-
-                {{-- Acción de la noticia si existe --}}
-                @if($item->action_url && $item->action_text)
-                <div class="p-6 pt-0 mt-auto">
-                    <a href="{{ $item->action_url }}" class="inline-flex items-center justify-center gap-2 w-full px-6 py-2.5 bg-gray-50 hover:bg-gradient-to-r hover:from-mzl-blue hover:to-mzl-teal text-mzl-blue hover:text-white rounded-xl font-bold text-sm transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-mzl-blue/20 group/btn border border-gray-100 hover:border-transparent">
-                        {{ $item->action_text }}
-                        <svg class="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-                    </a>
-                </div>
-                @endisset
-            </article>
-            @endforeach
-        </div>
-
-        @if($news->hasPages())
-        <div class="mt-8 flex justify-center">
-            {{ $news->links() }}
-        </div>
-        @endif
-    @endif
+    <div
+        id="stagger-news-root"
+        data-news='@json($news)'
+    ></div>
 </div>
 
 </body>

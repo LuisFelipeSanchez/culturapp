@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/js/app-react.tsx',
                 'resources/js/app-cursos.tsx',
+        'resources/js/app-noticias.tsx',
             ],
             refresh: true,
         }),

@@ -33,7 +33,7 @@
             <div class="w-full lg:w-5/12 shrink-0">
                 <div class="aspect-[4/3] rounded-3xl overflow-hidden shadow-lg border border-gray-100 relative">
                     @if($course->image)
-                        <img src="{{ asset('storage/'.$course->image) }}" alt="Foto de {{ $course->title }}" class="w-full h-full object-cover">
+                        <img src="{{ $course->image_url }}" alt="Foto de {{ $course->title }}" class="w-full h-full object-cover">
                     @else
                         <div class="w-full h-full bg-gradient-to-br from-mzl-blue/20 to-mzl-teal/20 flex flex-col items-center justify-center text-gray-400 text-6xl">
                             {{ $course->category->icon ?? '🎨' }}
